@@ -10,6 +10,8 @@ add_subdirectory(SDL)
 add_executable(3DRendering
     src/main.cpp
     src/Renderer.cpp
+    src/Cube.cpp
+    src/Projection.cpp
 )
 
 target_link_libraries(3DRendering PRIVATE SDL3::SDL3)
