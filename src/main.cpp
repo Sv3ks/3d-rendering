@@ -1,3 +1,6 @@
+#include <iostream>
+#include <iomanip>
+
 #include <SDL3/SDL.h>
 
 #include "Renderer.h"
@@ -17,6 +20,10 @@ void drawLine(SDL_Renderer* renderer, int x1, int y1, int x2, int y2) {
 }
 
 int main() {
+    std::cout << std::fixed;
+    std::cout << std::setprecision(2);
+
+
     // init projekt
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -47,11 +54,9 @@ int main() {
     {
         Vector3 point = cube.vertices[i];
         point.z += 5;
-        point.x -= 2.5f;
-        point.y += 1.75f;
         projected[i] = project(point);
     }
-    
+    float offsetX = 0.0f, offsetY = 0.0f, offsetZ = 0.0f;
 
     bool running = true;
     SDL_Event event; // input
@@ -62,6 +67,56 @@ int main() {
             if (event.type == SDL_EVENT_QUIT) { // Window luk knap
                 running = false;
             }
+        }
+        
+        // keyboard
+        const bool* keyboard = SDL_GetKeyboardState(nullptr);
+        if (keyboard[SDL_SCANCODE_LEFT])
+        {
+            offsetX -= 0.0025f;
+        }
+
+        if (keyboard[SDL_SCANCODE_RIGHT])
+        {
+            offsetX += 0.0025f;
+        }
+
+        if (keyboard[SDL_SCANCODE_UP])
+        {
+            offsetY -= 0.0025f;
+        }
+
+        if (keyboard[SDL_SCANCODE_DOWN])
+        {
+            offsetY += 0.0025f;
+        }
+
+        if (keyboard[SDL_SCANCODE_SPACE])
+        {
+            offsetZ += 0.0025f;
+        }
+
+        if (keyboard[SDL_SCANCODE_LALT])
+        {
+            offsetZ -= 0.0025f;
+        }
+        std::cout <<
+        "offsetX: " << offsetX <<
+        "\t\toffsetY: " << offsetY <<
+        "\t\toffsetZ: " << offsetZ <<
+        "\t\r" << std::flush;
+
+
+        //opdater projekteret placering
+        for (int i = 0; i < 8; i++)
+        {
+            Vector3 point = cube.vertices[i];
+
+            point.x += offsetX;
+            point.y += offsetY;
+            point.z += 5+offsetZ;
+
+            projected[i] = project(point);
         }
 
         renderer.clear(); // ryd skærm med farve
