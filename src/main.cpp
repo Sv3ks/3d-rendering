@@ -30,6 +30,7 @@ int main() {
     // vindue
     char* title = "Window";
     int width = 800, height = 600;
+    float aspectRatio = (float)width/(float)height;
 
     SDL_Window* window = SDL_CreateWindow(
         title,
@@ -50,12 +51,6 @@ int main() {
 
     Vector2 projected[8]; // de nye 2d punkter
 
-    for (int i = 0; i < 8; i++)
-    {
-        Vector3 point = cube.vertices[i];
-        point.z += 5;
-        projected[i] = project(point);
-    }
     float offsetX = 0.0f, offsetY = 0.0f, offsetZ = 0.0f;
 
     bool running = true;
@@ -83,12 +78,12 @@ int main() {
 
         if (keyboard[SDL_SCANCODE_UP])
         {
-            offsetY -= 0.0025f;
+            offsetY += 0.0025f;
         }
 
         if (keyboard[SDL_SCANCODE_DOWN])
         {
-            offsetY += 0.0025f;
+            offsetY -= 0.0025f;
         }
 
         if (keyboard[SDL_SCANCODE_SPACE])
@@ -116,7 +111,8 @@ int main() {
             point.y += offsetY;
             point.z += 5+offsetZ;
 
-            projected[i] = project(point);
+            projected[i] = project(point,aspectRatio);
+
         }
 
         renderer.clear(); // ryd skærm med farve
@@ -125,7 +121,17 @@ int main() {
         for (int i = 0; i < 12; i++)
         {
             Edge edge = cube.edges[i];
-            renderer.drawLine(projected[edge.a], projected[edge.b]);
+
+            Vector2 a = projected[edge.a];
+            Vector2 b = projected[edge.b];
+
+            a.x = (1+a.x) / 2 * width;
+            a.y = (1-a.y)/ 2 * height; // vend aksen om
+
+            b.x = (1+b.x) / 2 * width;
+            b.y = (1-b.y)/ 2 * height;
+
+            renderer.drawLine(a, b);
         }
         
         
