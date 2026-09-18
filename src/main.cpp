@@ -8,6 +8,7 @@
 #include "Vector2.h"
 #include "Vector3.h"
 #include "Projection.h"
+#include "Transform.h"
 
 void drawLine(SDL_Renderer* renderer, int x1, int y1, int x2, int y2) {
     SDL_RenderLine(
@@ -48,10 +49,12 @@ int main() {
     Renderer renderer(sdlRenderer);
 
     Cube cube;
-
+    Vector3 cubePos = {0,0,5};
+    Vector3 cubeRotation = {0,0,0};
     Vector2 projected[8]; // de nye 2d punkter
 
-    float offsetX = 0.0f, offsetY = 0.0f, offsetZ = 0.0f;
+    Vector3 camPos = {0,0,0};
+    Vector2 camRotation = {0,0};
 
     bool running = true;
     SDL_Event event; // input
@@ -66,50 +69,40 @@ int main() {
         
         // keyboard
         const bool* keyboard = SDL_GetKeyboardState(nullptr);
-        if (keyboard[SDL_SCANCODE_LEFT])
-        {
-            offsetX -= 0.0025f;
-        }
+        
+        if (keyboard[SDL_SCANCODE_A]) camPos.x -= 0.005f;
+        if (keyboard[SDL_SCANCODE_D]) camPos.x += 0.005f;
+        if (keyboard[SDL_SCANCODE_S]) camPos.z -= 0.005f;
+        if (keyboard[SDL_SCANCODE_W]) camPos.z += 0.005f;
+        if (keyboard[SDL_SCANCODE_SPACE]) camPos.y += 0.005f;
+        if (keyboard[SDL_SCANCODE_LSHIFT]) camPos.y -= 0.005f;
 
-        if (keyboard[SDL_SCANCODE_RIGHT])
-        {
-            offsetX += 0.0025f;
-        }
+        if (keyboard[SDL_SCANCODE_LEFT]) camRotation.y += 0.00075f;
+        if (keyboard[SDL_SCANCODE_RIGHT]) camRotation.y -= 0.00075f;
+        if (keyboard[SDL_SCANCODE_UP]) camRotation.x += 0.00075f;
+        if (keyboard[SDL_SCANCODE_DOWN]) camRotation.x -= 0.00075f;
 
-        if (keyboard[SDL_SCANCODE_UP])
-        {
-            offsetY += 0.0025f;
-        }
-
-        if (keyboard[SDL_SCANCODE_DOWN])
-        {
-            offsetY -= 0.0025f;
-        }
-
-        if (keyboard[SDL_SCANCODE_SPACE])
-        {
-            offsetZ += 0.0025f;
-        }
-
-        if (keyboard[SDL_SCANCODE_LALT])
-        {
-            offsetZ -= 0.0025f;
-        }
         std::cout <<
-        "offsetX: " << offsetX <<
-        "\t\toffsetY: " << offsetY <<
-        "\t\toffsetZ: " << offsetZ <<
-        "\t\r" << std::flush;
+        "X: " << camPos.x <<
+        "\tY: " << camPos.y <<
+        "\tZ: " << camPos.z <<
+        "\r" << std::flush;
 
+        //cubeRotation = translate(cubeRotation,{0.002f,0.002f,0.001f});
 
         //opdater projekteret placering
         for (int i = 0; i < 8; i++)
         {
             Vector3 point = cube.vertices[i];
 
-            point.x += offsetX;
-            point.y += offsetY;
-            point.z += 5+offsetZ;
+            point = rotateY(point,cubeRotation.y);
+            point = rotateX(point,cubeRotation.x);
+            point = rotateZ(point,cubeRotation.z);
+            point = translate(point,cubePos);
+            point = translate(point,{-camPos.x, -camPos.y, -camPos.z});
+            point = rotateY(point,-camRotation.y);
+            point = rotateX(point,camRotation.x);
+            
 
             projected[i] = project(point,aspectRatio);
 
@@ -117,7 +110,7 @@ int main() {
 
         renderer.clear(); // ryd skærm med farve
 
-        renderer.drawColor(255,0,0,255);
+        renderer.drawColor(255,255,255,255);
         for (int i = 0; i < 12; i++)
         {
             Edge edge = cube.edges[i];

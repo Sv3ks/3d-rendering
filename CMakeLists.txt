@@ -12,6 +12,7 @@ add_executable(3DRendering
     src/Renderer.cpp
     src/Cube.cpp
     src/Projection.cpp
+    src/Transform.cpp
 )
 
 target_link_libraries(3DRendering PRIVATE SDL3::SDL3)
