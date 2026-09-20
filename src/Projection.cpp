@@ -4,7 +4,7 @@
 Vector2 project(Vector3 point, float aspectRatio) {
     float theta = 90*(M_PI/180); // FOV
     float projectionScale = tan(theta/2);
-    
+
     Vector2 result;
 
     /*

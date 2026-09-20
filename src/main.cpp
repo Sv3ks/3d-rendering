@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <cmath>
 
 #include <SDL3/SDL.h>
 
@@ -52,9 +53,11 @@ int main() {
     Vector3 cubePos = {0,0,5};
     Vector3 cubeRotation = {0,0,0};
     Vector2 projected[8]; // de nye 2d punkter
+    bool visible[8];
 
     Vector3 camPos = {0,0,0};
     Vector2 camRotation = {0,0};
+    float camSpeed = 0.005f;
 
     bool running = true;
     SDL_Event event; // input
@@ -70,15 +73,16 @@ int main() {
         // keyboard
         const bool* keyboard = SDL_GetKeyboardState(nullptr);
         
-        if (keyboard[SDL_SCANCODE_A]) camPos.x -= 0.005f;
-        if (keyboard[SDL_SCANCODE_D]) camPos.x += 0.005f;
-        if (keyboard[SDL_SCANCODE_S]) camPos.z -= 0.005f;
-        if (keyboard[SDL_SCANCODE_W]) camPos.z += 0.005f;
+        float cos = std::cos(camRotation.y), sin = std::sin(camRotation.y);
+        if (keyboard[SDL_SCANCODE_A]) camPos.z -= camSpeed * -sin, camPos.x -= camSpeed * cos;
+        if (keyboard[SDL_SCANCODE_D]) camPos.z += camSpeed * -sin, camPos.x += camSpeed * cos;
+        if (keyboard[SDL_SCANCODE_S]) camPos.z -= camSpeed * cos, camPos.x -= camSpeed * sin;
+        if (keyboard[SDL_SCANCODE_W]) camPos.z += camSpeed * cos, camPos.x += camSpeed * sin;
         if (keyboard[SDL_SCANCODE_SPACE]) camPos.y += 0.005f;
         if (keyboard[SDL_SCANCODE_LSHIFT]) camPos.y -= 0.005f;
 
-        if (keyboard[SDL_SCANCODE_LEFT]) camRotation.y += 0.00075f;
-        if (keyboard[SDL_SCANCODE_RIGHT]) camRotation.y -= 0.00075f;
+        if (keyboard[SDL_SCANCODE_LEFT]) camRotation.y -= 0.00075f;
+        if (keyboard[SDL_SCANCODE_RIGHT]) camRotation.y += 0.00075f;
         if (keyboard[SDL_SCANCODE_UP]) camRotation.x += 0.00075f;
         if (keyboard[SDL_SCANCODE_DOWN]) camRotation.x -= 0.00075f;
 
@@ -86,6 +90,8 @@ int main() {
         "X: " << camPos.x <<
         "\tY: " << camPos.y <<
         "\tZ: " << camPos.z <<
+        "\tYaw: " << camRotation.y <<
+        "\tPitch: " << camRotation.x <<
         "\r" << std::flush;
 
         //cubeRotation = translate(cubeRotation,{0.002f,0.002f,0.001f});
@@ -95,14 +101,20 @@ int main() {
         {
             Vector3 point = cube.vertices[i];
 
+
             point = rotateY(point,cubeRotation.y);
             point = rotateX(point,cubeRotation.x);
             point = rotateZ(point,cubeRotation.z);
             point = translate(point,cubePos);
             point = translate(point,{-camPos.x, -camPos.y, -camPos.z});
-            point = rotateY(point,-camRotation.y);
+            point = rotateY(point,camRotation.y);
             point = rotateX(point,camRotation.x);
             
+            if (point.z <= 0.0f) { 
+                visible[i] = false;
+                continue; 
+            } 
+            visible[i] = true;
 
             projected[i] = project(point,aspectRatio);
 
@@ -113,7 +125,10 @@ int main() {
         renderer.drawColor(255,255,255,255);
         for (int i = 0; i < 12; i++)
         {
-            Edge edge = cube.edges[i];
+            Edge edge = cube.edges[i];            
+
+            if (!visible[edge.a] || !visible[edge.b])
+                continue;
 
             Vector2 a = projected[edge.a];
             Vector2 b = projected[edge.b];
