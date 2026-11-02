@@ -11,6 +11,9 @@
 #include "Projection.h"
 #include "Transform.h"
 
+const int TARGET_FPS = 60;
+const int TARGET_FRAME_TIME = 1000 / TARGET_FPS;
+
 void drawLine(SDL_Renderer* renderer, int x1, int y1, int x2, int y2) {
     SDL_RenderLine(
         renderer,
@@ -57,13 +60,21 @@ int main() {
 
     Vector3 camPos = {0,0,0};
     Vector2 camRotation = {0,0};
-    float camSpeed = 0.005f;
+    float camSpeed = 0.1f;
+    float camRotSpeed = 0.02f;
+
+    // FPS
+    uint64_t frameStart;
+    uint64_t frameTime;
+    int currentFPS;
 
     bool running = true;
     SDL_Event event; // input
 
     // game loop
     while (running) {
+        frameStart = SDL_GetTicks(); // FPS - starttid af frame
+
         while (SDL_PollEvent(&event)) { // loop events hvis nogen
             if (event.type == SDL_EVENT_QUIT) { // Window luk knap
                 running = false;
@@ -78,23 +89,25 @@ int main() {
         if (keyboard[SDL_SCANCODE_D]) camPos.z += camSpeed * -sin, camPos.x += camSpeed * cos;
         if (keyboard[SDL_SCANCODE_S]) camPos.z -= camSpeed * cos, camPos.x -= camSpeed * sin;
         if (keyboard[SDL_SCANCODE_W]) camPos.z += camSpeed * cos, camPos.x += camSpeed * sin;
-        if (keyboard[SDL_SCANCODE_SPACE]) camPos.y += 0.005f;
-        if (keyboard[SDL_SCANCODE_LSHIFT]) camPos.y -= 0.005f;
+        if (keyboard[SDL_SCANCODE_SPACE]) camPos.y += camSpeed;
+        if (keyboard[SDL_SCANCODE_LSHIFT]) camPos.y -= camSpeed;
 
-        if (keyboard[SDL_SCANCODE_LEFT]) camRotation.y -= 0.00075f;
-        if (keyboard[SDL_SCANCODE_RIGHT]) camRotation.y += 0.00075f;
-        if (keyboard[SDL_SCANCODE_UP]) camRotation.x += 0.00075f;
-        if (keyboard[SDL_SCANCODE_DOWN]) camRotation.x -= 0.00075f;
+        if (keyboard[SDL_SCANCODE_LEFT]) camRotation.y -= camRotSpeed;
+        if (keyboard[SDL_SCANCODE_RIGHT]) camRotation.y += camRotSpeed;
+        if (keyboard[SDL_SCANCODE_UP]) camRotation.x += camRotSpeed;
+        if (keyboard[SDL_SCANCODE_DOWN]) camRotation.x -= camRotSpeed;
+
 
         std::cout <<
-        "X: " << camPos.x <<
+        "FPS: " << currentFPS <<
+        "\t\tX: " << camPos.x <<
         "\tY: " << camPos.y <<
         "\tZ: " << camPos.z <<
         "\tYaw: " << camRotation.y <<
         "\tPitch: " << camRotation.x <<
         "\r" << std::flush;
 
-        //cubeRotation = translate(cubeRotation,{0.002f,0.002f,0.001f});
+        //cubeRotation = translate(cubeRotation,{0.03f,0.02f,0.01f});
 
         //opdater projekteret placering
         for (int i = 0; i < 8; i++)
@@ -122,7 +135,7 @@ int main() {
 
         renderer.clear(); // ryd skærm med farve
 
-        renderer.drawColor(255,255,255,255);
+        renderer.drawColor(255,0,0,255);
         for (int i = 0; i < 12; i++)
         {
             Edge edge = cube.edges[i];            
@@ -145,6 +158,14 @@ int main() {
         
         // Vis det der er renderet
         renderer.present();
+
+        frameTime = SDL_GetTicks() - frameStart;
+        if (frameTime < TARGET_FRAME_TIME) {
+            SDL_Delay(TARGET_FRAME_TIME - frameTime);
+            currentFPS = TARGET_FPS;
+        } else {
+            currentFPS = 1000/frameTime;
+        }
     }
 
     SDL_DestroyWindow(window);
