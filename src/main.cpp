@@ -52,14 +52,11 @@ int main() {
 
     Renderer renderer(sdlRenderer);
 
-    Cube cube;
-    Vector3 cubePos = {0,0,5};
-    Vector3 cubeRotation = {0,0,0};
-    Vector2 projected[8]; // de nye 2d punkter
-    bool visible[8];
+    Cube cube1({-2,0,5},{0,0,0});
+    Cube cube2({2,0,5},{0,0,0});
 
     Vector3 camPos = {0,0,0};
-    Vector2 camRotation = {0,0};
+    Vector3 camRotation = {0,0,0};
     float camSpeed = 0.1f;
     float camRotSpeed = 0.02f;
 
@@ -110,51 +107,16 @@ int main() {
         //cubeRotation = translate(cubeRotation,{0.03f,0.02f,0.01f});
 
         //opdater projekteret placering
-        for (int i = 0; i < 8; i++)
-        {
-            Vector3 point = cube.vertices[i];
-
-
-            point = rotateY(point,cubeRotation.y);
-            point = rotateX(point,cubeRotation.x);
-            point = rotateZ(point,cubeRotation.z);
-            point = translate(point,cubePos);
-            point = translate(point,{-camPos.x, -camPos.y, -camPos.z});
-            point = rotateY(point,camRotation.y);
-            point = rotateX(point,camRotation.x);
-            
-            if (point.z <= 0.0f) { 
-                visible[i] = false;
-                continue; 
-            } 
-            visible[i] = true;
-
-            projected[i] = project(point,aspectRatio);
-
-        }
+        cube1.Update(camPos, camRotation, aspectRatio);
+        cube2.Update(camPos, camRotation, aspectRatio);
 
         renderer.clear(); // ryd skærm med farve
 
         renderer.drawColor(255,0,0,255);
-        for (int i = 0; i < 12; i++)
-        {
-            Edge edge = cube.edges[i];            
+        cube1.Draw(renderer, width, height);
 
-            if (!visible[edge.a] || !visible[edge.b])
-                continue;
-
-            Vector2 a = projected[edge.a];
-            Vector2 b = projected[edge.b];
-
-            a.x = (1+a.x) / 2 * width;
-            a.y = (1-a.y)/ 2 * height; // vend aksen om
-
-            b.x = (1+b.x) / 2 * width;
-            b.y = (1-b.y)/ 2 * height;
-
-            renderer.drawLine(a, b);
-        }
-        
+        renderer.drawColor(0,255,0,255);
+        cube2.Draw(renderer, width, height);
         
         // Vis det der er renderet
         renderer.present();

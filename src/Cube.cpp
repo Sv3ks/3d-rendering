@@ -1,6 +1,13 @@
 #include "Cube.h"
+#include "Vector2.h"
+#include "Transform.h"
+#include "Projection.h"
+#include "Renderer.h"
 
-Cube::Cube() {
+Cube::Cube(Vector3 pos, Vector3 rot) {
+    position = pos;
+    rotation = rot;
+     
     // foran
     vertices[0] = {-1, -1, -1};
     vertices[1] = { 1, -1, -1};
@@ -27,3 +34,49 @@ Cube::Cube() {
     edges[10] = {2,6};
     edges[11] = {3,7};
 };
+
+void Cube::Update(Vector3 camPos, Vector3 camRotation, int aspectRatio) {
+    for (int i = 0; i < 8; i++)
+    {
+        Vector3 point = this->vertices[i];
+
+
+        point = rotateY(point,rotation.y);
+        point = rotateX(point,rotation.x);
+        point = rotateZ(point,rotation.z);
+        point = translate(point,position);
+        point = translate(point,{-camPos.x, -camPos.y, -camPos.z});
+        point = rotateY(point,camRotation.y);
+        point = rotateX(point,camRotation.x);
+        
+        if (point.z <= 0.0f) { 
+            visible[i] = false;
+            continue; 
+        } 
+        visible[i] = true;
+
+        projected[i] = project(point,aspectRatio);
+
+    }
+}
+
+void Cube::Draw(Renderer renderer, int width, int height) {
+    for (int i = 0; i < 12; i++)
+    {
+        Edge edge = edges[i];            
+
+        if (!visible[edge.a] || !visible[edge.b])
+            continue;
+
+        Vector2 a = this->projected[edge.a];
+        Vector2 b = this->projected[edge.b];
+
+        a.x = (1+a.x) / 2 * width;
+        a.y = (1-a.y)/ 2 * height; // vend aksen om
+
+        b.x = (1+b.x) / 2 * width;
+        b.y = (1-b.y)/ 2 * height;
+
+        renderer.drawLine(a, b);
+    }
+}

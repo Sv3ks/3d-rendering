@@ -1,12 +1,19 @@
 #pragma once
 
 #include "Vector3.h"
+#include "Vector2.h"
 #include "Edge.h"
+#include "Renderer.h"
 
 class Cube {
     public:
         Vector3 vertices[8]; //terning har 8 hjørner
         Edge edges[12]; // kanter
+        bool visible[8];
+        Vector3 position, rotation; 
+        Vector2 projected[8]; // 2d punkter
 
-        Cube();
+        Cube(Vector3 pos, Vector3 rot);
+        void Update(Vector3 camPos, Vector3 camRotation, int aspectRatio);
+        void Draw(Renderer renderer, int width, int height);
 };
