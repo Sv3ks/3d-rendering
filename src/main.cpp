@@ -36,6 +36,7 @@ int main() {
     char* title = "Window";
     int width = 800, height = 600;
     float aspectRatio = (float)width/(float)height;
+    std::cout << aspectRatio << "\n";
 
     SDL_Window* window = SDL_CreateWindow(
         title,
@@ -104,7 +105,7 @@ int main() {
         "\tPitch: " << camRotation.x <<
         "\r" << std::flush;
 
-        //cubeRotation = translate(cubeRotation,{0.03f,0.02f,0.01f});
+        cube1.rotation = translate(cube1.rotation,{0.03f,0.02f,0.01f});
 
         //opdater projekteret placering
         cube1.Update(camPos, camRotation, aspectRatio);

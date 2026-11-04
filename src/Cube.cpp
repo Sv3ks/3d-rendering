@@ -7,7 +7,7 @@
 Cube::Cube(Vector3 pos, Vector3 rot) {
     position = pos;
     rotation = rot;
-     
+
     // foran
     vertices[0] = {-1, -1, -1};
     vertices[1] = { 1, -1, -1};
@@ -33,9 +33,16 @@ Cube::Cube(Vector3 pos, Vector3 rot) {
     edges[9] = {1,5};
     edges[10] = {2,6};
     edges[11] = {3,7};
+
+    edges[12] = {0,2};
+    edges[13] = {5,7};
+    edges[14] = {3,4};
+    edges[15] = {1,6};
+    edges[16] = {3,6};
+    edges[17] = {1,4};
 };
 
-void Cube::Update(Vector3 camPos, Vector3 camRotation, int aspectRatio) {
+void Cube::Update(Vector3 camPos, Vector3 camRotation, float aspectRatio) {
     for (int i = 0; i < 8; i++)
     {
         Vector3 point = this->vertices[i];
